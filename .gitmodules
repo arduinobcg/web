@@ -1,0 +1,6 @@
+[submodule "web-backend"]
+	path = web-backend
+	url = https://github.com/arduinobcg/web-backend.git
+[submodule "web-frontend"]
+	path = web-frontend
+	url = https://github.com/arduinobcg/web-frontend.git
