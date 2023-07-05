@@ -2,7 +2,6 @@ services:
   backend:
     depends_on:
       - database
-      - mongoinit
       - message_queue
     build: 
       context: ./web-backend
@@ -25,6 +24,7 @@ services:
     ports:
       - "8081:8081"
       - "27017:27017"
+    command: mongod -replSet "rs0"
     healthcheck:
       test: ["CMD","mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 5s
@@ -34,9 +34,14 @@ services:
     image: rabbitmq:3-management
     ports:
       - "8080:8080"
+      - "15672:15672"
+      - "1883:1883"
+      - "5672:5672"
     environment:
       RABBITMQ_DEFAULT_USER: user
       RABBITMQ_DEFAULT_PASS: password
+    volumes:
+      - ./enabled_plugins:/etc/rabbitmq/enabled_plugins:ro
     healthcheck:
         test: ["CMD", "curl", "-f", "http://localhost:8080"]
         interval: 30s
