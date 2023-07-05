@@ -2,6 +2,7 @@ services:
   backend:
     depends_on:
       - database
+      - mongoinit
       - message_queue
     build: 
       context: ./web-backend
@@ -9,7 +10,7 @@ services:
     environment:
       MONGODB_URI: "mongodb://database:27017/?replicaSet=rs0"
     ports:
-      - "8080:80"
+      - "8082:80"
       - "8443:443"
   frontend:
     build: 
@@ -24,6 +25,11 @@ services:
     ports:
       - "8081:8081"
       - "27017:27017"
+    healthcheck:
+      test: ["CMD","mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
   message_queue:
     image: rabbitmq:3-management
     ports:
@@ -31,24 +37,30 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: user
       RABBITMQ_DEFAULT_PASS: password
-  mongoinit:
-    image: mongo
-    # this container will exit after executing the command
-    restart: "no"
-    depends_on:
-      - database
-    command: >
-      mongo --host database:27017 --eval 
-      '
-      db = (new Mongo("localhost:27017")).getDB("test");
-      config = {
-      "_id" : "miyako",
-      "members" : [
-        {
-          "_id" : 0,
-          "host" : "database:27017"
-        },
-      ]
-      };
-      rs.initiate(config);
-      '      
+    healthcheck:
+        test: ["CMD", "curl", "-f", "http://localhost:8080"]
+        interval: 30s
+        timeout: 10s
+        retries: 5
+#  mongoinit:
+#    image: mongo
+#    # this container will exit after executing the command
+#    restart: "no"
+#    depends_on:
+#      database:
+#        condition: service_healthy
+#    command: >
+#      mongosh <
+#      '
+#      db = (new Mongo("database:27017")).getDB("test");
+#      config = {
+#      "_id" : "miyako",
+#      "members" : [
+#        {
+#          "_id" : 0,
+#          "host" : "database:27017"
+#        },
+#      ]
+#      };
+#      rs.initiate(config);
+#      '
