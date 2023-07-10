@@ -19,12 +19,12 @@ services:
       - "3000:3000"
   database:
     image: mongo
-    volumes:
-      - ../db/:/data/db:rw
+#    volumes:
+#      - ../db/:/data/db:rw
     ports:
       - "8081:8081"
       - "27017:27017"
-    command: mongod -replSet "rs0"
+    command: mongod # -replSet "rs0"
     healthcheck:
       test: ["CMD","mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 5s
